@@ -1,0 +1,410 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blush: #F5DCD8;
+    --blush-light: #FDF6F3;
+    --cream: #FAF3EC;
+    --gold: #C29A5B;
+    --gold-dark: #A9824A;
+    --text: #5A4A46;
+    --text-soft: #9A8B86;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ---------- زر الموسيقى ---------- */
+.music-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(194,154,91,0.5);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+    opacity: 0;
+    pointer-events: none;
+}
+.music-btn.playing { animation: spin 3s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- شاشة الظرف ---------- */
+.envelope-screen {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(130% 110% at 70% 8%, #f9e8e4 0%, #fff9f6 40%, #fffdfb 68%, #f6e8e0 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: opacity 0.8s ease;
+}
+.envelope-screen.fade-out { opacity: 0; pointer-events: none; }
+
+.envelope {
+    position: relative;
+    width: 300px;
+    height: 210px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+}
+@keyframes envLuxFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.envelope-screen::before {
+    content: ''; position: absolute; top: -12vw; right: -10vw;
+    width: 46vw; height: 46vw; max-width: 520px; max-height: 520px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(214,161,140,.5), transparent 68%);
+    filter: blur(60px); pointer-events: none;
+}
+@media (min-width: 561px) { .envelope { animation: envLuxFloat 6s ease-in-out infinite; } }
+.envelope:hover { animation: none; transform: scale(1.03); }
+.env-back {
+    position: absolute; inset: 0;
+    background: #E8C6BE;
+    border-radius: 8px;
+    z-index: 0;
+}
+.env-paper {
+    position: absolute; left: 20px; right: 20px; top: 26px; bottom: 40px;
+    background: #FFFDF6; border-radius: 4px; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 22px rgba(0,0,0,.18);
+    transition: transform .9s cubic-bezier(.2,.9,.3,1.14);
+}
+.envelope .env-calligraphy { font-family: 'Pinyon Script', cursive; font-size: 36px; color: var(--gold); }
+.envelope.open .env-paper { transform: translateY(-150%) scale(1.05) rotate(-1.5deg); z-index: 10; }
+
+.env-front {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #F6E3DC, #EFCFC6);
+    border-radius: 8px;
+    z-index: 4;
+    clip-path: polygon(0 18%, 50% 62%, 100% 18%, 100% 100%, 0 100%);
+}
+.env-flap {
+    position: absolute; top: 0; left: 0; width: 100%; height: 58%;
+    background: linear-gradient(180deg, #EED8CF, #E2C8BE);
+    clip-path: polygon(0 0, 50% 100%, 100% 0);
+    border-radius: 8px 8px 0 0;
+    transform-origin: top;
+    z-index: 5;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,.12));
+}
+.envelope.open .env-flap { transform: rotateX(178deg); z-index: 1; }
+
+.wax-seal {
+    position: absolute;
+    top: 118px; left: 50%;
+    transform: translate(-50%, -50%) rotate(-5deg);
+    width: 70px; height: 70px;
+    border-radius: 53% 47% 60% 40% / 47% 61% 39% 55%;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFF6EA;
+    font-family: 'Pinyon Script', cursive;
+    font-size: 23px;
+    z-index: 6;
+background:
+        radial-gradient(circle at 30% 26%, rgba(255,236,218,.5) 0%, rgba(255,205,175,.16) 28%, transparent 56%),
+        radial-gradient(circle at 68% 82%, rgba(70,8,6,.55) 30%, rgba(0,0,0,0) 62%),
+        linear-gradient(155deg, #E8876A 0%, #C64A34 38%, #982517 66%, #6E120B 100%);
+    box-shadow:
+        0 8px 18px rgba(110,18,12,.45),
+        0 2px 5px rgba(0,0,0,.25),
+        inset 0 4px 7px rgba(255,228,206,.5),
+        inset -4px -6px 12px rgba(60,4,2,.55),
+        inset 0 0 0 1.5px rgba(255,210,180,.28),
+        inset 0 0 0 6px rgba(115,18,12,.16);
+    transition: transform .6s cubic-bezier(.34,1.56,.64,1), opacity .5s ease, filter .5s ease;
+}
+.wax-seal::before {
+    content: ''; position: absolute; left: 6%; right: 6%; bottom: -13px; height: 28px;
+    background:
+        radial-gradient(ellipse 10px 14px at 12% 88%, #B13A28 55%, rgba(140,28,15,0) 62%),
+        radial-gradient(ellipse 6px 15px at 30% 76%, #D0543E 45%, rgba(140,28,15,0) 62%),
+        radial-gradient(ellipse 12px 17px at 52% 94%, #9E2619 55%, rgba(140,28,15,0) 62%),
+        radial-gradient(ellipse 7px 14px at 74% 82%, #C04936 50%, rgba(140,28,15,0) 62%),
+        radial-gradient(ellipse 5px 9px at 91% 90%, #B8402D 55%, rgba(140,28,15,0) 62%),
+        radial-gradient(ellipse 4px 6px at 42% 70%, #C74A36 50%, rgba(140,28,15,0) 60%);
+    filter: blur(.35px);
+}
+.wax-seal::after {
+    content: ''; position: absolute; inset: -1px; border-radius: inherit;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.8 0'/></filter><rect width='150' height='150' filter='url(%23n)'/></svg>");
+    background-size: 130px 130px;
+    mix-blend-mode: multiply;
+    opacity: .34;
+    pointer-events: none;
+}
+.envelope.open .wax-seal { transform: translate(-50%, -50%) rotate(20deg) scale(1.5); opacity: 0; }
+
+.env-hint {
+    margin-top: 30px;
+    color: #806862;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    animation: probe 2s ease-in-out infinite;
+}
+@keyframes probe { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
+
+/* ---------- التمرير ---------- */
+.scroll-container {
+    height: 100vh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+.scroll-container.visible { opacity: 1; }
+
+.slide {
+    min-height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    position: relative;
+}
+
+/* ---------- نصوص مشتركة ---------- */
+.script-en {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 34px;
+    color: var(--gold);
+    margin-bottom: 6px;
+}
+h2 {
+    font-family: 'El Messiri', serif;
+    font-size: 34px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 30px;
+}
+
+/* ---------- الترحيب ---------- */
+.hero { background: linear-gradient(160deg, #F5DCD8, #FDF3EF 60%, #FBE98F22); }
+.hero-deco { font-size: 40px; color: var(--gold); margin-bottom: 10px; }
+.couple-ar {
+    font-family: 'El Messiri', serif;
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--text);
+}
+.couple-ar .amp { font-family: 'Cormorant Garamond', serif; color: var(--gold); font-style: italic; }
+.sub { color: var(--text-soft); font-weight: 300; margin-top: 12px; font-size: 17px; }
+.hero-date {
+    display: flex; gap: 28px;
+    margin-top: 30px;
+    font-family: 'El Messiri', serif;
+}
+.hero-date span { font-size: 15px; color: var(--text-soft); border-bottom: 1px solid var(--gold); padding-bottom: 6px; }
+.scroll-cue {
+    position: absolute; bottom: 30px;
+    color: var(--text-soft);
+    font-size: 13px;
+    animation: bounce 2s infinite;
+}
+@keyframes bounce { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(8px);} }
+
+/* ---------- العد التنازلي ---------- */
+.countdown-section { background: var(--blush-light); }
+.timer { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.time-box {
+    min-width: 84px;
+    padding: 22px 10px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(194,154,91,0.15);
+    border: 1px solid rgba(194,154,91,0.25);
+}
+.time-box span {
+    display: block;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px;
+    font-weight: 600;
+    color: var(--gold-dark);
+}
+.time-box small { color: var(--text-soft); font-size: 13px; }
+
+/* ---------- القصة ---------- */
+.story-section { background: #FFFDFB; }
+.story-line { border-right: 2px solid rgba(194,154,91,0.4); max-width: 340px; padding-right: 24px; margin-top: 10px; }
+.story-item { position: relative; margin-bottom: 34px; text-align: right; }
+.story-dot {
+    position: absolute;
+    right: -33px; top: 6px;
+    width: 14px; height: 14px;
+    background: var(--gold);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px #fff, 0 0 0 6px rgba(194,154,91,0.3);
+}
+.story-item h3 { font-family: 'El Messiri', serif; color: var(--gold-dark); margin-bottom: 6px; }
+.story-item p { color: var(--text-soft); font-size: 14px; line-height: 1.8; }
+
+/* ---------- البرنامج ---------- */
+.program-section { background: linear-gradient(160deg, #F5DCD8, #FFF5F0); }
+.program-cards { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 380px; }
+.prog-card {
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(194,154,91,0.25);
+    border-radius: 14px;
+    padding: 20px 24px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+    transition: transform 0.3s;
+}
+.prog-card:hover { transform: translateY(-4px); }
+.prog-time {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 26px;
+    color: var(--gold-dark);
+}
+.prog-card h3 { font-family: 'El Messiri', serif; margin: 4px 0; }
+.prog-card p { color: var(--text-soft); font-size: 13px; }
+
+/* ---------- المكان ---------- */
+.venue-section { background: #FFFDFB; }
+.venue-name { font-family: 'El Messiri', serif; font-size: 24px; color: var(--text); }
+.venue-address { color: var(--text-soft); margin-top: 8px; font-size: 15px; }
+.map-btn {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 12px 26px;
+    background: var(--gold);
+    color: #fff;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 15px;
+    box-shadow: 0 6px 16px rgba(194,154,91,0.35);
+    transition: background 0.3s;
+}
+.map-btn:hover { background: var(--gold-dark); }
+
+/* ---------- تأكيد الحضور ---------- */
+.rsvp-section { background: var(--blush-light); }
+.rsvp-hint { color: var(--text-soft); font-size: 14px; margin-bottom: 22px; margin-top: -20px; }
+#rsvpForm { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; }
+input, select {
+    padding: 14px 16px;
+    border: 1px solid rgba(194,154,91,0.4);
+    border-radius: 10px;
+    background: #fff;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    text-align: right;
+}
+input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(194,154,91,0.15); }
+button[type="submit"] {
+    padding: 14px;
+    background: var(--gold);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+button[type="submit"]:hover { background: var(--gold-dark); }
+.form-message { margin-top: 16px; font-size: 15px; color: var(--gold-dark); min-height: 20px; font-weight: 500; }
+
+/* ---------- التذييل ---------- */
+.footer {
+    scroll-snap-align: end;
+    min-height: 60vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    background: var(--text);
+    color: #F3E7DE;
+    padding: 40px 20px;
+}
+.footer-calligraphy {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 46px;
+    color: var(--gold);
+}
+.footer p { margin-top: 8px; font-family: 'El Messiri', serif; }
+.footer-note { color: #CBB9AE; font-size: 13px; font-family: 'IBM Plex Sans Arabic', sans-serif !important; }
+
+/* ---------- ظهور تدريجي عند التمرير ---------- */
+.reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.on { opacity: 1; transform: none; }
+
+a, button, input, select { -webkit-tap-highlight-color: transparent; }
+
+/* ---------- زخارف أزهار ---------- */
+.floral { position: fixed; width: 200px; height: 200px; pointer-events: none; z-index: 60; }
+.floral-tl { top: -28px; left: -28px; animation: floralSway 7s ease-in-out infinite; }
+.floral-br { bottom: -28px; right: -28px; animation: floralSway 6.5s ease-in-out infinite reverse; }
+.floral-hero { position: absolute; top: 34px; right: 20px; width: 84px; height: 84px; animation: floralSpin 16s linear infinite; }
+@keyframes floralSway {
+    0%, 100% { transform: rotate(-4deg) translate(0, 0); }
+    50%      { transform: rotate(4deg) translate(3px, -4px); }
+}
+@keyframes floralSpin { to { transform: rotate(360deg); } }
+
+/* ---------- زر ولوحة تخصيص الأسماء ---------- */
+.names-btn {
+    position: fixed; top: 20px; right: 20px; z-index: 120;
+    background: #fff; border: 1px solid rgba(194,154,91,.45);
+    color: var(--gold-dark); font-family: 'IBM Plex Sans Arabic', sans-serif;
+    font-size: 13px; padding: 8px 16px; border-radius: 20px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    transition: transform .2s, background .2s;
+}
+.names-btn:hover { transform: translateY(-2px); background: #fffdf6; }
+.names-panel {
+    position: fixed; top: 72px; right: 20px; z-index: 120;
+    background: #fff; border-radius: 14px; border: 1px solid rgba(194,154,91,.3);
+    padding: 18px; width: 240px; box-shadow: 0 16px 40px rgba(0,0,0,.18);
+    display: none; flex-direction: column; gap: 12px;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+}
+.names-panel.open { display: flex; animation: panelIn .3s ease; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.names-panel label { font-size: 13px; color: var(--text-soft); display: flex; flex-direction: column; gap: 6px; }
+.names-panel input {
+    padding: 10px 12px; border: 1px solid rgba(194,154,91,.4); border-radius: 8px;
+    font-family: inherit; text-align: right; font-size: 14px; color: var(--text);
+}
+.names-panel input:focus { border-color: var(--gold); outline: none; }
+.names-panel button {
+    padding: 11px; border: none; border-radius: 8px; background: var(--gold); color: #fff;
+    font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.names-panel button:hover { background: var(--gold-dark); }
+
+/* الختم: الحرف محفور في الشمع */
+.wax-seal .seal-txt {
+    font-family: 'Pinyon Script', cursive;
+    color: rgba(70,8,4,.92);
+    text-shadow: 0 1px 0 rgba(255,228,205,.55), 0 -1px 1px rgba(0,0,0,.4), 0 2px 3px rgba(0,0,0,.38);
+}
+
+@media (max-width: 420px) {
+    .couple-ar { font-size: 44px; }
+    .time-box { min-width: 70px; }
+    .time-box span { font-size: 32px; }
+}

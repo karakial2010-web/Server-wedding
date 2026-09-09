@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@200;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <title>دعوة زفاف</title>
+</head>
+<body>
+
+    <svg class="floral floral-tl" viewBox="0 0 100 100" aria-hidden="true">
+        <g fill="none" stroke="#6B8E95" stroke-width="1.2" opacity=".5">
+            <circle cx="26" cy="26" r="7"/><ellipse cx="26" cy="19" rx="4.5" ry="7"/>
+            <ellipse cx="19" cy="26" rx="7" ry="4.5"/><ellipse cx="26" cy="33" rx="4.5" ry="7"/>
+            <ellipse cx="33" cy="26" rx="7" ry="4.5"/>
+            <path d="M26 26 Q44 8 62 12"/>
+            <circle cx="62" cy="12" r="5"/>
+            <path d="M26 33 Q20 52 30 60"/><ellipse cx="30" cy="64" rx="4" ry="6"/>
+            <path d="M33 30 Q52 44 58 60"/><ellipse cx="59" cy="64" rx="4" ry="6"/>
+        </g>
+    </svg>
+    <svg class="floral floral-br" viewBox="0 0 100 100" aria-hidden="true">
+        <g fill="none" stroke="#6B8E95" stroke-width="1.2" opacity=".5">
+            <circle cx="74" cy="74" r="7"/><ellipse cx="74" cy="67" rx="4.5" ry="7"/>
+            <ellipse cx="67" cy="74" rx="7" ry="4.5"/><ellipse cx="74" cy="81" rx="4.5" ry="7"/>
+            <ellipse cx="81" cy="74" rx="7" ry="4.5"/>
+            <path d="M74 74 Q56 92 38 88"/>
+            <circle cx="38" cy="88" r="5"/>
+        </g>
+    </svg>
+
+    <button id="namesBtn" class="names-btn" title="تخصيص الأسماء">✎ تحرير الأسماء</button>
+    <div id="namesPanel" class="names-panel">
+        <label>اسم العريس <input id="editGroom" type="text" value="آدم"></label>
+        <label>اسم العروس <input id="editBride" type="text" value="لارا"></label>
+        <button id="namesApply">تطبيق</button>
+    </div>
+
+    <div class="container">
+        <!-- قسم الظرف -->
+        <section class="slide" id="envelope-section">
+            <div class="envelope" onclick="openInvitation()">
+                <div class="env-paper">L & A</div>
+                <div class="flap"></div>
+                <div class="front"></div>
+                <div class="seal"><span class="seal-txt">A&L</span></div>
+            </div>
+            <p class="open-hint">اضغط على الظرف لفتح الدعوة</p>
+        </section>
+
+        <!-- قسم الترحيب -->
+        <section class="slide hidden" id="main-invitation">
+            <h1>آل المنصور وآل العمري</h1>
+            <p>نتشرف بدعوتكم لمشاركتنا فرحتنا</p>
+            <div class="names">لارا & آدم</div>
+            <div class="date">24 . 09 . 2026</div>
+        </section>
+
+        <!-- قسم الجدول الزمني -->
+        <section class="slide hidden" id="timeline">
+            <h2>برنامج الحفل</h2>
+            <div class="timeline-line">
+                <div class="event"><span>7:00</span> استقبال الضيوف</div>
+                <div class="event"><span>7:30</span> مراسم العقد</div>
+                <div class="event"><span>8:00</span> جلسة التهاني</div>
+                <div class="event"><span>9:00</span> مأدبة العشاء</div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function openInvitation() {
+            const env = document.querySelector('.envelope');
+            if (!env || env.classList.contains('open')) return;
+            env.classList.add('open');
+            setTimeout(function () {
+                document.getElementById('envelope-section').style.display = 'none';
+                document.getElementById('main-invitation').classList.remove('hidden');
+                document.getElementById('timeline').classList.remove('hidden');
+                wireReveals();
+            }, 1000);
+        }
+
+        // ظهور تدريجي عند التمرير
+        function wireReveals() {
+            const io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('on');
+                        io.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.12 });
+            document.querySelectorAll('.event, .slide h1, .slide h2, .slide > p').forEach(function (el, i) {
+                el.classList.add('reveal');
+                el.style.transitionDelay = (0.1 * i) + 's';
+                io.observe(el);
+            });
+        }
+
+        // تخصيص الأسماء (بأحرف محفورة)
+        var namesBtn = document.getElementById('namesBtn');
+        var namesPanel = document.getElementById('namesPanel');
+        namesBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            namesPanel.classList.toggle('open');
+        });
+        document.addEventListener('click', function (e) {
+            if (namesPanel.classList.contains('open') && !namesPanel.contains(e.target) &&
+                e.target !== namesBtn && !namesBtn.contains(e.target)) {
+                namesPanel.classList.remove('open');
+            }
+        });
+        document.getElementById('namesApply').addEventListener('click', function () {
+            var groom = document.getElementById('editGroom').value.trim();
+            var bride = document.getElementById('editBride').value.trim();
+            if (!groom || !bride) return;
+            document.querySelector('.names').textContent = bride + ' & ' + groom;
+            document.querySelector('.env-paper').textContent = bride.charAt(0).toUpperCase() + ' & ' + groom.charAt(0).toUpperCase();
+            document.querySelector('.seal-txt').textContent = groom.charAt(0).toUpperCase() + '&' + bride.charAt(0).toUpperCase();
+            namesPanel.classList.remove('open');
+        });
+    </script>
+</body>
+</html>
